@@ -39,6 +39,14 @@ func TestOneDimensionalLattice(t *testing.T) {
 	// Validate total number of endpoints
 	allEndpoints := lat.GetAllEndpoints()
 	assert.Equal(t, 20, len(allEndpoints))
+
+	subLat, err := lat.SimulateFailure("AZ", "us-east-1a")
+	assert.NoError(t, err)
+	assert.Equal(t, 10, len(subLat.GetAllEndpoints()))
+
+	subLat, err = lat.SimulateFailure("AZ", "us-east-1b")
+	assert.NoError(t, err)
+	assert.Equal(t, 10, len(subLat.GetAllEndpoints()))
 }
 
 func TestTwoDimensionalLattice(t *testing.T) {
@@ -61,4 +69,38 @@ func TestTwoDimensionalLattice(t *testing.T) {
 	// Validate total number of endpoints
 	allEndpoints := lat.GetAllEndpoints()
 	assert.Equal(t, 20, len(allEndpoints))
+
+	subLat, err := lat.SimulateFailure("AZ", "us-east-1a")
+	assert.NoError(t, err)
+	assert.Equal(t, 10, len(subLat.GetAllEndpoints()))
+
+	subLat, err = lat.SimulateFailure("AZ", "us-east-1b")
+	assert.NoError(t, err)
+	assert.Equal(t, 10, len(subLat.GetAllEndpoints()))
+
+	subLat, err = lat.SimulateFailure("Version", "1")
+	assert.NoError(t, err)
+	assert.Equal(t, 10, len(subLat.GetAllEndpoints()))
+
+	subLat, err = lat.SimulateFailure("Version", "2")
+	assert.NoError(t, err)
+	assert.Equal(t, 10, len(subLat.GetAllEndpoints()))
+
+	subLat, err = lat.SimulateFailure("AZ", "us-east-1a")
+	assert.NoError(t, err)
+	subLat, err = subLat.SimulateFailure("Version", "1")
+	assert.NoError(t, err)
+	assert.Equal(t, 5, len(subLat.GetAllEndpoints()))
+
+	subLat, err = lat.SimulateFailure("AZ", "us-east-1a")
+	assert.NoError(t, err)
+	subLat, err = subLat.SimulateFailure("Version", "2")
+	assert.NoError(t, err)
+	assert.Equal(t, 5, len(subLat.GetAllEndpoints()))
+
+	subLat, err = lat.SimulateFailure("AZ", "us-east-1b")
+	assert.NoError(t, err)
+	subLat, err = subLat.SimulateFailure("Version", "1")
+	assert.NoError(t, err)
+	assert.Equal(t, 5, len(subLat.GetAllEndpoints()))
 }

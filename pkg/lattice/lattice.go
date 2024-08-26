@@ -1,8 +1,10 @@
 package lattice
 
 import (
-	"errors"
 	"fmt"
+	"strings"
+
+	"github.com/pkg/errors"
 )
 
 type DimensionMismatchError struct{}
@@ -127,4 +129,33 @@ func (l *Lattice[T]) GetDimensionValues(dimension string) []string {
 
 func (l *Lattice[T]) GetDimensionSize(dimension string) int {
 	return len(l.valuesByDimension[dimension])
+}
+
+func (l *Lattice[T]) SimulateFailure(dimensionName, value string) (*Lattice[T], error) {
+	sublattice := NewLattice[T](l.dimensions)
+
+	// get the index of dimensionName in l.dimensions
+	dimIndex := -1
+	for i, dim := range l.dimensions {
+		if dim == dimensionName {
+			dimIndex = i
+			break
+		}
+	}
+
+	if dimIndex == -1 {
+		return nil, errors.New("dimension not found")
+	}
+
+	for coord, endpoints := range l.endpointsByCoord {
+		coordParts := strings.Split(strings.Trim(coord, "[]"), " ") // Remove brackets and split on space
+		if coordParts[dimIndex] != value {
+			err := sublattice.AddEndpointsForSector(coordParts, endpoints)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to add endpoints for sector")
+			}
+		}
+	}
+
+	return sublattice, nil
 }
